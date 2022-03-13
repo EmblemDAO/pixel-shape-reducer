@@ -1,5 +1,8 @@
 const fs = require("fs");
-const svgBadgeFileNames = ["pathfinder-3-120px"];
+const svgBadgeFileNames = fs
+  .readdirSync("./badges", { withFileTypes: true })
+  .filter((item) => !item.isDirectory())
+  .map((item) => item.name.split(".svg")[0]);
 const { chunk } = require("lodash");
 
 svgBadgeFileNames.forEach((badge) => {
