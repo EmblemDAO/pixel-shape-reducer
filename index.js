@@ -60,6 +60,7 @@ svgBadgeFileNames.forEach((badge) => {
 
   const chunkedData = chunk(compressedData.data, 3);
   chunkedData.forEach((line, i) => {
+    console.log(line);
     const cx = cxPositions[line[0]];
     const cy = cyPositions[line[1]];
     const color = colors[line[2]];
