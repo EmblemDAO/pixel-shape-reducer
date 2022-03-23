@@ -57,6 +57,8 @@ function compressHex(b, c) {
     : b.replace(/../g, compressHex);
 }
 
+const allColors = [];
+
 svgBadgeFileNames.forEach((badge) => {
   const data = [];
   const colors = [];
@@ -74,6 +76,10 @@ svgBadgeFileNames.forEach((badge) => {
     const cy = cyMatch ? Number(cyMatch[1]) : null;
     const fill = fillMatch ? fillMatch[1] : null;
     const compressedFill = fill ? compressHex(rgbHex(fill)) : null;
+
+    if (!allColors.includes(compressedFill)) {
+      allColors.push(compressedFill);
+    }
 
     if (!colors.includes(compressedFill)) {
       colors.push(compressedFill);
@@ -95,8 +101,6 @@ svgBadgeFileNames.forEach((badge) => {
       data.push(cxIndex, cyIndex, colorIndex);
     }
   });
-
-  console.log("colors", colors);
 
   const compressedData = {
     colors,
@@ -136,3 +140,6 @@ svgBadgeFileNames.forEach((badge) => {
 
   fs.writeFileSync(testPath, svg);
 });
+
+const allColorsPath = `./colors/all-colors.json`;
+fs.writeFileSync(allColorsPath, JSON.stringify({ allColors }));
