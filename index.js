@@ -20,7 +20,7 @@ svgBadgeFileNames.forEach((badge) => {
   allFileContents.split(/\r?\n/).forEach((line) => {
     const cxMatch = line.match(/cx='([0-9\.]+)'/);
     const cyMatch = line.match(/cy='([0-9\.]+)'/);
-    const fillMatch = line.match(/style='fill: rgb\([0-9,] +\);'/);
+    const fillMatch = line.match(/style='fill: rgb\([0-9, ]+\);'/);
 
     const cx = cxMatch ? Number(cxMatch[1]) : null;
     const cy = cyMatch ? Number(cyMatch[1]) : null;
