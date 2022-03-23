@@ -5,8 +5,56 @@ const svgBadgeFileNames = fs
   .map((item) => item.name.split(".svg")[0]);
 const { chunk } = require("lodash");
 
+function rgbHex(red, green, blue, alpha) {
+  const isPercent = (red + (alpha || "")).toString().includes("%");
+
+  if (typeof red === "string") {
+    [red, green, blue, alpha] = red
+      .match(/(0?\.?\d{1,3})%?\b/g)
+      .map((component) => Number(component));
+  } else if (alpha !== undefined) {
+    alpha = Number.parseFloat(alpha);
+  }
+
+  if (
+    typeof red !== "number" ||
+    typeof green !== "number" ||
+    typeof blue !== "number" ||
+    red > 255 ||
+    green > 255 ||
+    blue > 255
+  ) {
+    throw new TypeError("Expected three numbers below 256");
+  }
+
+  if (typeof alpha === "number") {
+    if (!isPercent && alpha >= 0 && alpha <= 1) {
+      alpha = Math.round(255 * alpha);
+    } else if (isPercent && alpha >= 0 && alpha <= 100) {
+      alpha = Math.round((255 * alpha) / 100);
+    } else {
+      throw new TypeError(
+        `Expected alpha value (${alpha}) as a fraction or percentage`
+      );
+    }
+
+    alpha = (alpha | (1 << 8)).toString(16).slice(1); // eslint-disable-line no-mixed-operators
+  } else {
+    alpha = "";
+  }
+
+  // TODO: Remove this ignore comment.
+  // eslint-disable-next-line no-mixed-operators
+  return (
+    (blue | (green << 8) | (red << 16) | (1 << 24)).toString(16).slice(1) +
+    alpha
+  );
+}
+
 function compressHex(b, c) {
-  return ++c ? ((("0x" + b) / 17 + 0.5) | 0).toString(16) : b.replace(/../g, a);
+  return ++c
+    ? ((("0x" + b) / 17 + 0.5) | 0).toString(16)
+    : b.replace(/../g, compressHex);
 }
 
 svgBadgeFileNames.forEach((badge) => {
@@ -20,14 +68,15 @@ svgBadgeFileNames.forEach((badge) => {
   allFileContents.split(/\r?\n/).forEach((line) => {
     const cxMatch = line.match(/cx='([0-9\.]+)'/);
     const cyMatch = line.match(/cy='([0-9\.]+)'/);
-    const fillMatch = line.match(/style='fill: rgb\([0-9, ]+\);'/);
+    const fillMatch = line.match(/style='fill: (rgb.+);' \/>/);
 
     const cx = cxMatch ? Number(cxMatch[1]) : null;
     const cy = cyMatch ? Number(cyMatch[1]) : null;
     const fill = fillMatch ? fillMatch[1] : null;
+    const compressedFill = fill ? compressHex(rgbHex(fill)) : null;
 
-    if (!colors.includes(fill)) {
-      colors.push(fill);
+    if (!colors.includes(compressedFill)) {
+      colors.push(compressedFill);
     }
 
     if (!cxPositions.includes(cx)) {
@@ -38,11 +87,11 @@ svgBadgeFileNames.forEach((badge) => {
       cyPositions.push(cy);
     }
 
-    const colorIndex = colors.indexOf(fill);
+    const colorIndex = colors.indexOf(compressedFill);
     const cxIndex = cxPositions.indexOf(cx);
     const cyIndex = cyPositions.indexOf(cy);
 
-    if (cx && cy && fill) {
+    if (cx && cy && compressedFill) {
       data.push(cxIndex, cyIndex, colorIndex);
     }
   });
@@ -73,9 +122,7 @@ svgBadgeFileNames.forEach((badge) => {
     const cx = cxPositions[line[0]];
     const cy = cyPositions[line[1]];
     const color = colors[line[2]];
-    circles.push(
-      `<circle cx='${cx}' cy='${cy}' r='1.25' fill='rgba(${color})' />`
-    );
+    circles.push(`<circle cx='${cx}' cy='${cy}' r='1.25' fill='#${color}' />`);
   });
 
   const svg = `
