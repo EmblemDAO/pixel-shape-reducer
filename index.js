@@ -5,6 +5,10 @@ const svgBadgeFileNames = fs
   .map((item) => item.name.split(".svg")[0]);
 const { chunk } = require("lodash");
 
+function compressHex(b, c) {
+  return ++c ? ((("0x" + b) / 17 + 0.5) | 0).toString(16) : b.replace(/../g, a);
+}
+
 svgBadgeFileNames.forEach((badge) => {
   const data = [];
   const colors = [];
@@ -16,7 +20,7 @@ svgBadgeFileNames.forEach((badge) => {
   allFileContents.split(/\r?\n/).forEach((line) => {
     const cxMatch = line.match(/cx='([0-9\.]+)'/);
     const cyMatch = line.match(/cy='([0-9\.]+)'/);
-    const fillMatch = line.match(/style='fill: rgb\(([0-9, ]+)\);'/);
+    const fillMatch = line.match(/style='fill: rgb\([0-9,] +\);'/);
 
     const cx = cxMatch ? Number(cxMatch[1]) : null;
     const cy = cyMatch ? Number(cyMatch[1]) : null;
@@ -42,6 +46,8 @@ svgBadgeFileNames.forEach((badge) => {
       data.push(cxIndex, cyIndex, colorIndex);
     }
   });
+
+  console.log("colors", colors);
 
   const compressedData = {
     colors,
