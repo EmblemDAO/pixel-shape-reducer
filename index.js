@@ -57,6 +57,26 @@ function compressHex(b, c) {
     : b.replace(/../g, compressHex);
 }
 
+function lettersToHex(color) {
+  const letterToHexMap = {
+    a: 0,
+    b: 1,
+    c: 2,
+    d: 3,
+    e: 4,
+    f: 5,
+  };
+
+  return color.split("").map((char) => {
+    console.log(char, isNumber(char) ? Number(char) : letterToHexMap[char]);
+    return isNumber(char) ? Number(char) : letterToHexMap[char];
+  });
+}
+
+function isNumber(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
 const allColors = [];
 
 svgBadgeFileNames.forEach((badge) => {
@@ -75,7 +95,9 @@ svgBadgeFileNames.forEach((badge) => {
     const cx = cxMatch ? Number(cxMatch[1]) : null;
     const cy = cyMatch ? Number(cyMatch[1]) : null;
     const fill = fillMatch ? fillMatch[1] : null;
-    const compressedFill = fill ? compressHex(rgbHex(fill)) : null;
+    const compressedFill = fill
+      ? lettersToHex(compressHex(rgbHex(fill)))
+      : null;
 
     if (!allColors.includes(compressedFill)) {
       allColors.push(compressedFill);
