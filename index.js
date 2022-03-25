@@ -77,6 +77,11 @@ function isNumber(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
 
+// javascript check if array is in multidimensional array
+function isInArray(needle, haystack) {
+  return JSON.stringify(haystack).includes(JSON.stringify(needle));
+}
+
 const allColors = [];
 
 svgBadgeFileNames.forEach((badge) => {
@@ -99,11 +104,11 @@ svgBadgeFileNames.forEach((badge) => {
       ? lettersToHex(compressHex(rgbHex(fill)))
       : null;
 
-    if (!allColors.includes(compressedFill)) {
+    if (!isInArray(compressedFill, allColors)) {
       allColors.push(compressedFill);
     }
 
-    if (!colors.includes(compressedFill)) {
+    if (!isInArray(compressedFill, colors)) {
       colors.push(compressedFill);
     }
 
