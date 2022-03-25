@@ -85,7 +85,6 @@ function hexToAlphaNumeric(condensedHexArray) {
     15: "f",
   };
 
-  console.log("hexToAlphaNumeric", condensedHexArray);
   return condensedHexArray
     .split(",")
     .map((hex) => {
@@ -121,9 +120,10 @@ svgBadgeFileNames.forEach((badge) => {
     const cx = cxMatch ? Number(cxMatch[1]) : null;
     const cy = cyMatch ? Number(cyMatch[1]) : null;
     const fill = fillMatch ? fillMatch[1] : null;
+    const black = "0,0,0";
     const compressedFill = fill
       ? alphaNumericToHex(compressHex(rgbHex(fill)))
-      : null;
+      : black;
 
     if (!isInArray(compressedFill, allColors)) {
       allColors.push(compressedFill);
@@ -174,7 +174,6 @@ svgBadgeFileNames.forEach((badge) => {
     const cx = cxPositions[line[0]];
     const cy = cyPositions[line[1]];
     const color = hexToAlphaNumeric(colors[line[2]]);
-    console.log(cx, cy, color);
     circles.push(`<circle cx='${cx}' cy='${cy}' r='1.25' fill='#${color}' />`);
   });
 
@@ -190,5 +189,26 @@ svgBadgeFileNames.forEach((badge) => {
   fs.writeFileSync(testPath, svg);
 });
 
+svgBadgeFileNames.forEach((badge) => {
+  const compressedPath = `./compressed/${badge}.json`;
+  const trulyCompressedPath = `./truly-compressed/${badge}.json`;
+  const allFileContents = fs.readFileSync(compressedPath, "utf-8");
+
+  const compressedData = ({ colors, cxPositions, cyPositions, data } =
+    JSON.parse(allFileContents));
+
+  const trulyCompressedData = {
+    colors: compressedData.colors.map((color) =>
+      color.split(",").map((color) => parseInt(color))
+    ),
+    cxPositions: compressedData.cxPositions,
+    cyPositions: compressedData.cyPositions,
+    data: compressedData,
+  };
+
+  fs.writeFileSync(trulyCompressedPath, JSON.stringify(trulyCompressedData));
+});
+
 const allColorsPath = `./colors/all-colors.json`;
+
 fs.writeFileSync(allColorsPath, JSON.stringify({ allColors }));
