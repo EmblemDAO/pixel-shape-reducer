@@ -57,20 +57,41 @@ function compressHex(b, c) {
     : b.replace(/../g, compressHex);
 }
 
-function lettersToHex(color) {
+function alphaNumericToHex(color) {
   const letterToHexMap = {
-    a: 0,
-    b: 1,
-    c: 2,
-    d: 3,
-    e: 4,
-    f: 5,
+    a: 10,
+    b: 11,
+    c: 12,
+    d: 13,
+    e: 14,
+    f: 15,
   };
 
-  return color.split("").map((char) => {
-    console.log(char, isNumber(char) ? Number(char) : letterToHexMap[char]);
-    return isNumber(char) ? Number(char) : letterToHexMap[char];
-  });
+  return color
+    .split("")
+    .map((char) => {
+      return isNumber(char) ? Number(char) : letterToHexMap[char];
+    })
+    .join(",");
+}
+
+function hexToAlphaNumeric(condensedHexArray) {
+  const letterToHexMap = {
+    10: "a",
+    11: "b",
+    12: "c",
+    13: "d",
+    14: "e",
+    15: "f",
+  };
+
+  console.log("hexToAlphaNumeric", condensedHexArray);
+  return condensedHexArray
+    .split(",")
+    .map((hex) => {
+      return letterToHexMap[hex] || hex;
+    })
+    .join("");
 }
 
 function isNumber(n) {
@@ -101,7 +122,7 @@ svgBadgeFileNames.forEach((badge) => {
     const cy = cyMatch ? Number(cyMatch[1]) : null;
     const fill = fillMatch ? fillMatch[1] : null;
     const compressedFill = fill
-      ? lettersToHex(compressHex(rgbHex(fill)))
+      ? alphaNumericToHex(compressHex(rgbHex(fill)))
       : null;
 
     if (!isInArray(compressedFill, allColors)) {
@@ -152,7 +173,8 @@ svgBadgeFileNames.forEach((badge) => {
   chunkedData.forEach((line, i) => {
     const cx = cxPositions[line[0]];
     const cy = cyPositions[line[1]];
-    const color = colors[line[2]];
+    const color = hexToAlphaNumeric(colors[line[2]]);
+    console.log(cx, cy, color);
     circles.push(`<circle cx='${cx}' cy='${cy}' r='1.25' fill='#${color}' />`);
   });
 
